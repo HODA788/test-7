@@ -12,7 +12,7 @@ let currentSubjectVersion = 1;
 // 🛑 التحكم في ظهور لوحة الشرف (false = مخفية تماماً | true = تظهر تلقائياً)
 let showHonorRollStatus = false; 
 
-// --- ⚙️ قاعدة بيانات درجات وتقارير الطلاب (مضاف إليها الصف الدراسي تلقائياً) ⚙️ ---
+// --- ⚙️ قاعدة بيانات درجات وتقارير الطلاب ⚙️ ---
 const studentsResultsDatabase = {
     "محمد علي": {
         "3445": { date: "12/07/2026", scoreOutOf10: 9.0, examName: "امتحان التاريخ - الشهر الأول", stage: "الصف الثالث الإعدادي" },
@@ -33,23 +33,40 @@ const studentsResultsDatabase = {
     "صلاح محمود علي علي": {
         "STU-106-SCI": { date: "10/07/2026", scoreOutOf10: 8.5, examName: "امتحان الشهر الأول الشامل", stage: "الصف الثالث الإعدادي" }
     },
-     "صلاح محمود": {
+    "صلاح محمود": {
         "3452": { date: "10/07/2026", scoreOutOf10: 9, examName: "امتحان الشهر الأول الشامل", stage: "الصف الثالث الإعدادي" }
-     },
+    },
 };
 
-// --- قاعدة بيانات الأسئلة والأكواد المتاحة للحل ---
+// --- 📝 قاعدة بيانات الأسئلة والأكواد المتاحة للحل 📝 ---
 const examsDatabase = {
     "history_geography": {
         version: 55, 
         questions: [
-            { section: "history", type: "choice", question: "أمامك خريطة صماء للوطن العربي، ما اسم المضيق المشار إليه بالرقم (1)؟", imageUrl:"images.jpg", options: ["مضيق هرمز", "مضيق باب المندب", "مضيق جبل طارق"], correctAnswer: "مضيق جبل طارق", points: 2 }
+            { 
+                section: "history", 
+                type: "choice", 
+                question: "أمامك خريطة صماء للوطن العربي، ما اسم المضيق المشار إليه بالرقم (1)؟", 
+                imageUrl: "https://ibb.co/9mDGDsHr", // 👈 استبدل هذا الرابط المباشر برابط صورتك الفعلي
+                options: ["مضيق هرمز", "مضيق باب المندب", "مضيق جبل طارق"], 
+                correctAnswer: "مضيق جبل طارق", 
+                points: 2 
+            },
+            // يمكنك إضافة السؤال الثاني هنا بنفس الهيكل المتناسق 👇
         ]
     },
     "STU-101-ARAB": {
         version: 67, 
         questions: [
-            { section: "grammar", type: "choice", question: "الحالة الإعرابية الدائمة للمبتدأ والخبر في الجملة الاسمية المجردة هي:", options: ["الرفع", "النصب", "الجر"], correctAnswer: "الرفع", points: 2 }
+            { 
+                section: "grammar", 
+                type: "choice", 
+                question: "الحالة الإعرابية الدائمة للمبتدأ والخبر في الجملة الاسمية المجردة هي:", 
+                imageUrl: "", // اتركها فارغة إذا لم يكن هناك صورة للسؤال
+                options: ["الرفع", "النصب", "الجر"], 
+                correctAnswer: "الرفع", 
+                points: 2 
+            }
         ]
     }
 };
@@ -153,7 +170,6 @@ function checkStudentResult() {
         const percentage = (res.scoreOutOf10 / 10) * 100;
         const grade = calculateGrade(res.scoreOutOf10);
         const examDisplayName = res.examName ? res.examName : examCode;
-
         const currentStudentStage = res.stage || "غير محدد";
 
         let allScoresInThisStage = [];
@@ -192,7 +208,6 @@ function checkStudentResult() {
     }
 }
 
-// 🏆 دالة توليد لوحة شرف الأوائل لكل صف دراسي تلقائياً مع التأثيرات الحركية 🏆
 function generateHonorRoll() {
     let resultsSection = document.getElementById("results-section");
     if (!resultsSection) return;
@@ -200,7 +215,6 @@ function generateHonorRoll() {
     const oldHonorRoll = document.getElementById("honor-roll-container");
     if (oldHonorRoll) oldHonorRoll.remove();
 
-    // فحص حالة التحكم: إذا كانت false يتم مسح اللوحة وعدم بنائها
     if (showHonorRollStatus === true) {
         return;
     }
@@ -249,7 +263,6 @@ function generateHonorRoll() {
         const topStudents = stagesData[stageName].slice(0, 3);
         topStudents.forEach((student, index) => {
             let medal = index === 0 ? "🥇" : index === 1 ? "🥈" : "🥉";
-            
             let currentDelay = 0.3 + (delayCounter * 0.2);
             delayCounter++;
 
@@ -268,7 +281,6 @@ function generateHonorRoll() {
     }
 
     honorRollHTML += `</div>`;
-    
     resultsSection.insertAdjacentHTML('beforeend', honorRollHTML);
 }
 
@@ -353,6 +365,7 @@ function startExamActual() {
     }
 }
 
+// 🛠️ دالة بناء الأسئلة بعد تعديل استجابة تنسيق الصور للموبايل 🛠️
 function renderQuestions() {
     const container = document.getElementById('questions-container');
     if (!container) return; 
@@ -366,10 +379,17 @@ function renderQuestions() {
 
     activeQuestionsList.forEach((q, qIndex) => {
         let html = `<div id="block-q${qIndex}" class="question-block">`;
-        if (q.imageUrl) {
-            html += `<div style="margin-bottom: 15px; text-align:center;"><img src="${q.imageUrl}" style="max-width:100%; height:auto; border-radius:5px; max-height:200px;"></div>`;
+        
+        // 📱 تعديل ستايل الصورة لضمان استجابتها الكاملة على شاشات الموبايل بدون اختفاء
+        if (q.imageUrl && q.imageUrl.trim() !== "") {
+            html += `
+            <div style="margin-bottom: 15px; text-align:center;">
+                <img src="${q.imageUrl}" style="width:100%; max-width:450px; height:auto; border-radius:5px; display:inline-block; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+            </div>`;
         }
+        
         html += `<p style="font-weight:bold; font-size:17px; margin-bottom:10px;">س${qIndex + 1}: ${q.question} <span style="color:red;">*</span></p>`;
+        
         if (q.type === "choice") {
             q.options.forEach(opt => {
                 html += `<label style="display:block; margin:6px 0; cursor:pointer;"><input type="radio" name="q${qIndex}" value="${opt}" style="margin-left:8px;"> ${opt}</label>`;
