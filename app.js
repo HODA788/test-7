@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", function() {
     if (forgotLink) {
         forgotLink.addEventListener("click", function(event) {
             event.preventDefault(); // منع أي سلوك افتراضي للمتصفح
-            alert("📞 عذراً! يرجى الاتصال بالدعم الفني فوراً للحصول على كود الاختبار الخاص بك.");
+            
         });
     }
 
@@ -32,16 +32,19 @@ document.addEventListener("DOMContentLoaded", function() {
             const allowedStudents = {
                 "محمد علي": {
                     code: "455",
-                    subject: "history_geography"
+                    subject: "history_geography",
                 },
                 "محمود صابر": {
-                    code: "ARAB200",
-                    subject: "arabic_exam"
+                    code: "788",
+                    subject: "history",
                 },
                 "مي صلاح": {
                     code: "344",
-                    subject: "geo_homework_1"
-                }
+                },
+                "محمد صلاح صبري علي": {
+                    code: "563218",
+                    subject: "history_geography"
+                },
             };
 
             // الفحص الذكي والموحد لضمان السرية والأمان
@@ -52,11 +55,12 @@ document.addEventListener("DOMContentLoaded", function() {
                 localStorage.setItem("student_fullname", studentName);
                 localStorage.setItem("allowed_subject_key", studentData.subject);
 
-                alert(`مرحباً بك يا ${studentName}.\nتم التحقق من بياناتك بنجاح، جاري التوجيه للاختبار...`);
+                alert(`مرحباً بك يا ${studentName}.\nتم التحقق من بياناتك بنجاح، جاري توجيهك للمنصة برجاء الضغط علي حسنا!`);
                 window.location.href = "platform.html";
+            
             } else {
-                // رسالة خطأ موحدة في حال كان الاسم خطأ أو الكود خطأ
-                alert("❌ الاسم أو كود الاختبار خاطئ! يرجى التأكد من البيانات المكتوبة أو التواصل مع المعلم.");
+                // إظهار رسالة خطأ إذا كانت البيانات غير متطابقة
+                alert("❌ الاسم أو كود الاختبار غير صحيح، يرجى المحاولة مرة أخرى!");
             }
         });
     }
