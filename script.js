@@ -41,7 +41,7 @@ const studentsResultsDatabase = {
 // --- 📝 قاعدة بيانات الأسئلة والأكواد المتاحة للحل 📝 ---
 const examsDatabase = {
     "history_geography": {
-        version: 59, 
+        version: 78, 
         questions: [
             { 
                 section: "history", 
