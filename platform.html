@@ -132,7 +132,6 @@
         <div class="user-box" id="user-display-name">جاري التحميل...</div>
         <ul class="sidebar-menu">
             <li class="active" onclick="switchTab('exams')">📝 الاختبارات الحالية</li>
-            <li onclick="switchTab('homework')">📚 الواجبات المنزلية</li>
             <li onclick="switchTab('results')">📊 الاستعلام عن النتائج</li>
         </ul>
     </div>
@@ -140,30 +139,26 @@
     <div class="main-content">
         
         <div id="exams-section">
-            <h2 class="section-title">الاختبارات الحالية المتاحة</h2>
+            <h2 class="section-title">الاختبارات المتاحة</h2>
             <div class="grid-container">
                 <div class="exam-card">
-                    <h3>اختبار الأول الإعدادي</h3>
+                     <h3>اختبار الصف الثاني الاعدادي</h3>
+                    <h4>واجب الدرس الاول</h4>
+                    <p>جغرافيا</p>
                     <button class="btn" onclick="resetPortalToStep1('history_geography', 'exam')">ابدأ الآن</button>
                 </div>
                 <div class="exam-card">
-                    <h3>اختبار الثاني الإعدادي</h3>
-                    <button class="btn" onclick="resetPortalToStep1('arabic_exam', 'exam')">ابدأ الآن</button>
+                    <h3>اختبار الثالث الاعدادي</h3>
+                    <h4>واجب الدرس الاول</h4>
+                    <h4>جغرافيا</h4>
+                    
+                    <button class="btn" onclick="resetPortalToStep1('history', 'exam')">ابدأ الآن</button>
                 </div>
+                
             </div>
         </div>
 
-        <div id="homework-section" style="display: none;">
-            <h2 class="section-title">الواجبات المنزلية المتاحة</h2>
-            <div class="grid-container">
-                <div class="exam-card">
-                    <h3>واجب أولى إعدادي</h3>
-                    <h3 style="margin-bottom: 15px; color: #f39c12;">الدرس الأول</h3>
-                    <button class="btn" onclick="resetPortalToStep1('geo_homework_1', 'homework')">ابدأ الحل</button>
-                </div>
-            </div>
-        </div>
-
+        
         <div id="results-section" style="display: none;">
             <h2 class="section-title">لوحة النتائج والتقارير</h2>
             <div class="grid-container">
@@ -189,7 +184,7 @@
             </div>
             <div class="modal-content" id="step-2" style="display: none;">
                 <h3>تعليمات هامة</h3>
-                <p style="margin: 15px 0; text-align: right;">1. جميع الأسئلة إجبارية.<br>2. لا تغلق الصفحة حتى لا تضيع إجاباتك.<br>3. مدة الامتحان 15 دقيقة فقط.</p>
+                <p style="margin: 15px 0; text-align: right;">1. جميع الأسئلة إجبارية.<br>2. لا تغلق الصفحة حتى لا تضيع إجاباتك.<br>3. مدة الامتحان 30 دقيقة فقط.</p>
                 <button class="btn" style="background: #0066ff;" onclick="startExamActual()">ابدأ الامتحان فوراً</button>
             </div>
         </div>
