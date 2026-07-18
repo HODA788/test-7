@@ -47,7 +47,7 @@ const examsDatabase = {
                 section: "history", 
                 type: "choice", 
                 question: "أمامك خريطة صماء للوطن العربي، ما اسم المضيق المشار إليه بالرقم (1)؟", 
-                imageUrl: "https://ibb.co/9mDGDsHr", // 👈 استبدل هذا الرابط المباشر برابط صورتك الفعلي
+                imageUrl: "https://i.postimg.cc/8CyY8vmz/images.jpg", // 👈 استبدل هذا الرابط المباشر برابط صورتك الفعلي
                 options: ["مضيق هرمز", "مضيق باب المندب", "مضيق جبل طارق"], 
                 correctAnswer: "مضيق جبل طارق", 
                 points: 2 
