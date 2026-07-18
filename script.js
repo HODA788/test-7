@@ -1,5 +1,5 @@
 const formspreeUrl = "https://formspree.io/f/mojodlvd"; 
-const EXAM_DURATION_MINUTES = 15; 
+const EXAM_DURATION_MINUTES = 1; 
 
 // --- متغيرات الحالة (State) ---
 let timeLeft = EXAM_DURATION_MINUTES * 60; 
@@ -9,42 +9,47 @@ let currentActiveType = "exam";
 let activeQuestionsList = [];
 let currentSubjectVersion = 1; 
 
-// --- ⚙️ قاعدة بيانات درجات وتقارير الطلاب ⚙️ ---
+// 🛑 التحكم في ظهور لوحة الشرف (false = مخفية تماماً | true = تظهر تلقائياً)
+let showHonorRollStatus = false; 
+
+// --- ⚙️ قاعدة بيانات درجات وتقارير الطلاب (مضاف إليها الصف الدراسي تلقائياً) ⚙️ ---
 const studentsResultsDatabase = {
     "محمد علي": {
-        "HIST100": { date: "12/07/2026", scoreOutOf10: 9.5 },
-        "ARAB200": { date: "13/07/2026", scoreOutOf10: 8.0 }
+        "3445": { date: "12/07/2026", scoreOutOf10: 9.0, examName: "امتحان التاريخ - الشهر الأول", stage: "الصف الثالث الإعدادي" },
+        "STU-101-ARAB": { date: "13/07/2026", scoreOutOf10: 8.0, examName: "امتحان اللغة العربية - الشهر الأول", stage: "الصف الثاني الإعدادي" }
     },
     "محمود صابر": {
-        "ARAB200": { date: "11/07/2026", scoreOutOf10: 5.5 }
+        "677": { date: "11/07/2026", scoreOutOf10: 5.5, examName: "امتحان اللغة العربية - الشهر الأول", stage: "الصف الثاني الإعدادي" }
     },
     "مي صلاح": {
-        "GEO300": { date: "10/07/2026", scoreOutOf10: 4.0 }
-    }
+        "STU-103-GEO": { date: "10/07/2026", scoreOutOf10: 9.5, examName: "امتحان الجغرافيا - الشهر الأول", stage: "الصف الثالث الإعدادي" }
+    },
+    "محمد": {
+        "77": { date: "10/07/2026", scoreOutOf10: 10, examName: "الاختبار القصير الأول", stage: "الصف الثالث الإعدادي" }
+    },
+    "محمود علي رفعت علي": {
+        "STU-105-MATH": { date: "10/07/2026", scoreOutOf10: 6.0, examName: "الاختبار القصير الأول", stage: "الصف الثاني الإعدادي" }
+    },
+    "صلاح محمود علي علي": {
+        "STU-106-SCI": { date: "10/07/2026", scoreOutOf10: 8.5, examName: "امتحان الشهر الأول الشامل", stage: "الصف الثالث الإعدادي" }
+    },
+     "صلاح محمود": {
+        "3452": { date: "10/07/2026", scoreOutOf10: 9, examName: "امتحان الشهر الأول الشامل", stage: "الصف الثالث الإعدادي" }
+     },
 };
 
-// --- قاعدة بيانات الأسئلة (مفعلة ومتطابقة تماماً مع أزرار الـ HTML) ---
+// --- قاعدة بيانات الأسئلة والأكواد المتاحة للحل ---
 const examsDatabase = {
     "history_geography": {
-        version: 28, 
+        version: 55, 
         questions: [
-            { section: "geography", type: "choice", question: "أمامك خريطة صماء للوطن العربي، ما اسم المضيق المشار إليه بالرقم (1)؟", imageUrl: "https://images.unsplash.com/photo-1524661135-423995f22d0b?w=600", options: ["مضيق هرمز", "مضيق باب المندب", "مضيق جبل طارق"], correctAnswer: "مضيق جبل طارق", points: 2 },
-            { section: "history", type: "essay", question: "ما هي النتائج الاستراتيجية والعسكرية المترتبة على معركة أبو قير البحرية عام 1798؟", points: 5 }
+            { section: "history", type: "choice", question: "أمامك خريطة صماء للوطن العربي، ما اسم المضيق المشار إليه بالرقم (1)؟", imageUrl:"images.jpg", options: ["مضيق هرمز", "مضيق باب المندب", "مضيق جبل طارق"], correctAnswer: "مضيق جبل طارق", points: 2 }
         ]
     },
-    "arabic_exam": {
-        version: 4, 
+    "STU-101-ARAB": {
+        version: 67, 
         questions: [
             { section: "grammar", type: "choice", question: "الحالة الإعرابية الدائمة للمبتدأ والخبر في الجملة الاسمية المجردة هي:", options: ["الرفع", "النصب", "الجر"], correctAnswer: "الرفع", points: 2 }
-        ]
-    }
-};
-
-const homeworksDatabase = {
-    "geo_homework_1": {
-        version: 33,
-        questions: [
-            { section: "geography", type: "choice", question: "بالاستعانة بخريطة التضاريس، ما هي أعلى قمة جبلية في العالم؟", imageUrl: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600", options: ["قمة إفرست", "قمة كليمنجارو"], correctAnswer: "قمة إفرست", points: 1 }
         ]
     }
 };
@@ -57,7 +62,6 @@ function isExamFinished(subjectKey, type) {
     return savedVer && savedVer === currentVer;
 }
 
-// الفحص التلقائي والأمني عند التحميل
 window.onload = function() {
     const allowedSubject = localStorage.getItem("allowed_subject_key");
     const savedName = localStorage.getItem('student_fullname');
@@ -75,6 +79,7 @@ window.onload = function() {
 
     createTimerBannerElement();
     updateExamButtonsStatus();
+    generateHonorRoll(); 
 };
 
 function createTimerBannerElement() {
@@ -86,7 +91,6 @@ function createTimerBannerElement() {
     document.body.appendChild(banner);
 }
 
-// تحديث وحظر الأزرار غير المصرح بها للكروت
 function updateExamButtonsStatus() {
     const allowedSubject = localStorage.getItem("allowed_subject_key");
     const buttons = document.querySelectorAll('.main-content .btn');
@@ -127,11 +131,11 @@ function updateExamButtonsStatus() {
 }
 
 function calculateGrade(score) {
-    if (score >= 8.5) return "امتياز 🌟";
-    if (score >= 7.5) return "جيد جداً 👑";
-    if (score >= 6.5) return "جيد 👍";
-    if (score >= 5.0) return "مقبول 👌";
-    return "راسب (تحتاج مراجعة المادة) 📚";
+    if (score >= 9) return "امتياز ";
+    if (score >= 8) return "جيد جداً ";
+    if (score >= 6) return "جيد ";
+    if (score >= 5) return "مقبول ";
+    return  "راسب) يرجي التواصل مع المعلم او الدعم الفنية) 📚";
 }
 
 function checkStudentResult() {
@@ -148,17 +152,39 @@ function checkStudentResult() {
         const res = studentsResultsDatabase[studentName][examCode];
         const percentage = (res.scoreOutOf10 / 10) * 100;
         const grade = calculateGrade(res.scoreOutOf10);
+        const examDisplayName = res.examName ? res.examName : examCode;
+
+        const currentStudentStage = res.stage || "غير محدد";
+
+        let allScoresInThisStage = [];
+        
+        for (const name in studentsResultsDatabase) {
+            for (const code in studentsResultsDatabase[name]) {
+                const record = studentsResultsDatabase[name][code];
+                if (record.stage === currentStudentStage) {
+                    allScoresInThisStage.push(record.scoreOutOf10);
+                }
+            }
+        }
+        
+        allScoresInThisStage.sort((a, b) => b - a);
+        
+        const studentRank = allScoresInThisStage.indexOf(res.scoreOutOf10) + 1;
+        const totalStudentsInStage = allScoresInThisStage.length;
 
         displayBox.style.display = "block";
         displayBox.innerHTML = `
             <h4 style="color: #00d2ff; text-align: center; margin-bottom: 12px; font-weight: bold;">📜 بيان الدرجات المعتمد</h4>
             <p><strong>👤 الاسم:</strong> ${studentName}</p>
-            <p><strong>🔑 كود الاختبار:</strong> ${examCode}</p>
+            <p><strong>🏫 الصف الدراسي:</strong> <span style="color:#00d2ff; font-weight:bold;">${currentStudentStage}</span></p>
+            <p><strong>📖 المادة / نوع الامتحان:</strong> ${examDisplayName}</p>
+            <p><strong>🔑 كود الاختبار الخاص:</strong> ${examCode}</p>
             <p><strong>📅 تاريخ الأداء:</strong> ${res.date}</p>
             <hr style="border:0; border-top:1px solid rgba(255,255,255,0.2); margin:10px 0;">
             <p style="font-size:1.1rem;"><strong>🎯 الدرجة المكتسبة:</strong> <span style="color:#2ecc71; font-weight:bold;">${res.scoreOutOf10} من 10</span></p>
             <p><strong>📈 النسبة المئوية:</strong> ${percentage}%</p>
             <p><strong>🏅 التقدير العام:</strong> <span style="color:#f1c40f; font-weight:bold;">${grade}</span></p>
+            <p><strong>🏆 الترتيب التلقائي:</strong> <span style="color:#e74c3c; font-weight:bold;">المركز ( ${studentRank} )</span> من أصل ${totalStudentsInStage} طلاب في ${currentStudentStage}</p>
         `;
     } else {
         displayBox.style.display = "block";
@@ -166,7 +192,86 @@ function checkStudentResult() {
     }
 }
 
-// التبديل بين الأقسام وحماية الطالب من المغادرة
+// 🏆 دالة توليد لوحة شرف الأوائل لكل صف دراسي تلقائياً مع التأثيرات الحركية 🏆
+function generateHonorRoll() {
+    let resultsSection = document.getElementById("results-section");
+    if (!resultsSection) return;
+
+    const oldHonorRoll = document.getElementById("honor-roll-container");
+    if (oldHonorRoll) oldHonorRoll.remove();
+
+    // فحص حالة التحكم: إذا كانت false يتم مسح اللوحة وعدم بنائها
+    if (showHonorRollStatus === true) {
+        return;
+    }
+
+    let stagesData = {};
+
+    for (const studentName in studentsResultsDatabase) {
+        for (const examCode in studentsResultsDatabase[studentName]) {
+            const record = studentsResultsDatabase[studentName][examCode];
+            const stage = record.stage || "غير محدد";
+
+            if (!stagesData[stage]) {
+                stagesData[stage] = [];
+            }
+
+            let existingStudent = stagesData[stage].find(s => s.name === studentName);
+            if (existingStudent) {
+                if (record.scoreOutOf10 > existingStudent.score) {
+                    existingStudent.score = record.scoreOutOf10;
+                }
+            } else {
+                stagesData[stage].push({
+                    name: studentName,
+                    score: record.scoreOutOf10
+                });
+            }
+        }
+    }
+
+    let honorRollHTML = `
+        <div id="honor-roll-container" class="honor-roll-animate" style="margin-top: 30px; padding: 20px; background: rgba(255, 255, 255, 0.05); border: 2px solid #f1c40f; border-radius: 10px; box-shadow: 0 4px 15px rgba(241, 196, 15, 0.2);">
+            <h3 style="color: #f1c40f; text-align: center; font-weight: bold; margin-bottom: 20px;">🏆 لوحة شرف أوائل الطلاب 🏆</h3>
+    `;
+
+    let delayCounter = 0;
+
+    for (const stageName in stagesData) {
+        stagesData[stageName].sort((a, b) => b.score - a.score);
+
+        honorRollHTML += `
+            <div style="margin-bottom: 20px;">
+                <h5 style="color: #00d2ff; border-bottom: 1px dashed rgba(255,255,255,0.3); padding-bottom: 5px; font-weight: bold;">🥇 أوائل ${stageName}</h5>
+                <ul style="list-style: none; padding: 0; margin: 10px 0;">
+        `;
+
+        const topStudents = stagesData[stageName].slice(0, 3);
+        topStudents.forEach((student, index) => {
+            let medal = index === 0 ? "🥇" : index === 1 ? "🥈" : "🥉";
+            
+            let currentDelay = 0.3 + (delayCounter * 0.2);
+            delayCounter++;
+
+            honorRollHTML += `
+                <li class="student-item-animate" style="animation-delay: ${currentDelay}s; padding: 8px 12px; background: rgba(255,255,255,0.03); margin-bottom: 5px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center;">
+                    <span>${medal} <strong>${student.name}</strong></span>
+                    <span style="color: #2ecc71; font-weight: bold;">الدرجة: ${student.score} / 10</span>
+                </li>
+            `;
+        });
+
+        honorRollHTML += `
+                </ul>
+            </div>
+        `;
+    }
+
+    honorRollHTML += `</div>`;
+    
+    resultsSection.insertAdjacentHTML('beforeend', honorRollHTML);
+}
+
 function switchTab(tab) {
     if (window.isExamRunning) {
         alert("⚠️ عذراً! لا يمكنك التنقل أو مغادرة صفحة الامتحان حتى تقوم بتسليم الإجابات.");
@@ -189,6 +294,7 @@ function switchTab(tab) {
     } else if (tab === 'results') {
         document.getElementById('results-section').style.display = 'block';
         if(menuItems[2]) menuItems[2].classList.add('active');
+        generateHonorRoll(); 
     }
 }
 
@@ -203,7 +309,7 @@ function resetPortalToStep1(subjectKey, type) {
 
     const db = (cleanType === "exam") ? examsDatabase : homeworksDatabase;
     if (!db[cleanSubjectKey]) {
-        alert(`⚠️ تنبيه: الكود الممرر "${cleanSubjectKey}" غير موجود في قاعدة بيانات الجافا سكريبت حالياً.`);
+        alert(`⚠️ تنبيه: الكود الممرر "${cleanSubjectKey}"غير موجود في قاعدة بيانات حالياً.`);
         return;
     }
 
@@ -222,22 +328,18 @@ function showInstructionsPage() {
     document.getElementById('step-2').style.display = 'block';
 }
 
-// لبدء الامتحان الفعلي وقفل شاشة المنصة تماماً خلف صندوق الحل
 function startExamActual() {
     document.getElementById('portal-modal').style.display = 'none';
     document.getElementById('quiz-wrapper-box').style.display = 'block';
     
-    // --- 🔒 كود القفل والحظر الشامل لمنع التقليب ---
     const sidebar = document.querySelector('.sidebar');
-    if (sidebar) sidebar.style.display = 'none'; // إخفاء القائمة الجانبية تماماً
+    if (sidebar) sidebar.style.display = 'none'; 
     
-    // إخفاء كافة الأقسام التبادلية الخلفية لعدم تشتيت الطالب أو تمكينه من الرؤية
     if(document.getElementById('exams-section')) document.getElementById('exams-section').style.display = 'none';
     if(document.getElementById('homework-section')) document.getElementById('homework-section').style.display = 'none';
     if(document.getElementById('results-section')) document.getElementById('results-section').style.display = 'none';
     
-    window.isExamRunning = true; // تفعيل جدار الحماية البرمجي
-    // ---------------------------------------------
+    window.isExamRunning = true; 
 
     renderQuestions();
     
