@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تسجيل الدخول - منصة القيصر</title>
+    <!-- الخطوط -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700;900&display=swap" rel="stylesheet">
     
     <style>
-        /* التنسيقات العامة للموقع */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -19,11 +19,12 @@
 
         body {
             background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow-x: hidden; /* لمنع أي سكرول أفقي على الهواتف */
+            overflow-x: hidden;
+            padding: 20px 0;
         }
 
         #hero {
@@ -34,7 +35,61 @@
             padding: 20px;
         }
 
-        /* عنوان المنصة بخط عريض وشيك جداً */
+        /* ------------------ شريط الأخبار المطور ------------------ */
+        .news-ticker {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 210, 255, 0.6);
+            border-radius: 30px;
+            padding: 12px 24px; /* كبرنا المسافات الداخلية */
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            max-width: 720px; /* وسعنا الشريط ليتسع للسطر كاملاً */
+            width: 95%;
+            color: #fff;
+            animation: glowing-border 2.5s infinite ease-in-out;
+        }
+
+        .news-badge {
+            background: linear-gradient(90deg, #00d2ff, #0066ff);
+            color: #fff;
+            padding: 5px 18px; /* كبرنا شارة "أحدث الأخبار" */
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1rem; /* تكبير الخط */
+            white-space: nowrap;
+            box-shadow: 0 0 12px rgba(0, 210, 255, 0.6);
+            flex-shrink: 0; /* حماية البادج من الانكماش */
+        }
+
+        .news-text {
+            color: #e0f7fc;
+            font-weight: 700;
+            font-size: 1.1rem; /* تكبير خط النص */
+            line-height: 1.5;
+            white-space: normal; /* السماح بظهور النص كاملاً دون قطع (...) */
+        }
+
+        /* أنيميشن التوهج والإضاءة */
+        @keyframes glowing-border {
+            0% {
+                box-shadow: 0 0 8px rgba(0, 210, 255, 0.3), inset 0 0 5px rgba(0, 210, 255, 0.2);
+                border-color: rgba(0, 210, 255, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 22px rgba(0, 210, 255, 0.85), inset 0 0 10px rgba(0, 210, 255, 0.4);
+                border-color: rgba(0, 210, 255, 1);
+            }
+            100% {
+                box-shadow: 0 0 8px rgba(0, 210, 255, 0.3), inset 0 0 5px rgba(0, 210, 255, 0.2);
+                border-color: rgba(0, 210, 255, 0.4);
+            }
+        }
+        /* -------------------------------------------------------- */
+
         .brand-title {
             color: #fff;
             font-size: 2.5rem;
@@ -46,10 +101,9 @@
         }
 
         .brand-title span {
-            color: #00d2ff; /* تمييز كلمة القيصر بلون مختلف لجذب الانتباه */
+            color: #00d2ff;
         }
 
-        /* تصميم بوكس تسجيل الدخول الجديد والأنيق */
         .login-container {
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(15px);
@@ -72,24 +126,34 @@
             color: #fff;
             font-size: 1.6rem;
             font-weight: 700;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
-        /* تنسيق خانات الإدخال */
+        #custom-alert-msg {
+            display: none;
+            margin-bottom: 20px;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-align: center;
+            white-space: pre-line;
+        }
+
         .input-group {
             position: relative;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         .login-container input {
             width: 100%;
-            padding: 15px 20px;
+            padding: 14px 18px;
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 12px;
             outline: none;
             color: #fff;
-            font-size: 1rem;
+            font-size: 0.95rem;
             transition: all 0.3s ease;
             text-align: right;
         }
@@ -104,15 +168,14 @@
             color: #ccc;
         }
 
-        /* رابط هل نسيت كلمة المرور */
         .forgot-link {
             display: block;
             text-align: right;
             color: #00d2ff;
             font-size: 0.9rem;
             text-decoration: none;
-            margin-top: -10px;
-            margin-bottom: 25px;
+            margin-top: -5px;
+            margin-bottom: 20px;
             cursor: pointer;
             transition: color 0.2s;
             font-weight: 600;
@@ -123,7 +186,6 @@
             text-decoration: underline;
         }
 
-        /* زر دخول المنصة */
         .btn {
             width: 100%;
             padding: 15px;
@@ -144,19 +206,35 @@
             transform: scale(1.02);
         }
 
-        /* أيقونة الواتساب العائمة أسفل اليسار مع الدعم الفني */
+        #support-message {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 210, 255, 0.1);
+            border: 1px solid rgba(0, 210, 255, 0.4);
+            border-radius: 12px;
+            color: #fff;
+            text-align: right;
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
+        #support-message strong {
+            color: #00d2ff;
+        }
+
         .whatsapp-float {
             position: fixed;
             bottom: 20px;
             left: 20px;
             background-color: #25d366;
             color: #fff;
-            border-radius: 35px; /* تم تعديل الحواف لتناسب النص */
-            padding: 10px 18px;  /* مسافة مريحة للنص والأيقونة */
+            border-radius: 35px;
+            padding: 10px 18px;
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 8px;            /* مسافة بين الكلمة والأيقونة */
+            gap: 8px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             z-index: 100;
             transition: all 0.3s ease;
@@ -176,22 +254,34 @@
             fill: white;
         }
 
-        /* تحسينات الشاشات الصغيرة (التلفونات) */
+        /* الموبايل */
         @media (max-width: 480px) {
             body {
-                align-items: flex-start; /* ليعطي مساحة مريحة في الهواتف الصغيرة عند فتح الكيبورد */
-                padding-top: 40px;
-                height: auto;
-                min-height: 100vh;
+                align-items: flex-start;
+                padding-top: 20px;
+            }
+
+            .news-ticker {
+                padding: 10px 15px;
+                gap: 10px;
+            }
+
+            .news-badge {
+                font-size: 0.85rem;
+                padding: 4px 12px;
+            }
+
+            .news-text {
+                font-size: 0.95rem;
             }
 
             .brand-title {
-                font-size: 1.9rem; /* تصغير العنوان ليناسب الهواتف */
+                font-size: 1.9rem;
                 margin-bottom: 15px;
             }
 
             .login-container {
-                padding: 30px 20px; /* تقليل الحواف الداخلية لزيادة المساحة للبيانات */
+                padding: 30px 20px;
             }
 
             .login-container h2 {
@@ -203,7 +293,7 @@
                 bottom: 15px;
                 left: 15px;
                 padding: 8px 14px;
-                font-size: 0.85rem; /* تصغير زر الدعم الفني قليلاً على الهواتف */
+                font-size: 0.85rem;
             }
             
             .whatsapp-float svg {
@@ -211,74 +301,53 @@
                 height: 20px;
             }
         }
-
-        /* --- الإضافات: تنسيق صندوق التعليمات الجديد --- */
-        #payment-info {
-            display: none;
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(0, 210, 255, 0.1);
-            border: 1px solid rgba(0, 210, 255, 0.4);
-            border-radius: 12px;
-            color: #fff;
-            text-align: right;
-            font-size: 0.9rem;
-            line-height: 1.7;
-        }
-        #payment-info strong {
-            color: #00d2ff;
-        }
     </style>
 </head>
 <body>
 
 <div id="hero">
+    <!-- شريط الأخبار العاجلة / التنبيهات -->
+    <div class="news-ticker">
+        <span class="news-badge">📢 أحدث الأخبار</span>
+        <span class="news-text">أهلاً وسهلاً بطلاب القيصر الكرام! نتمنى لكم دوام التوفيق والنجاح.</span>
+    </div>
+
     <h1 class="brand-title">منصة <span>القيصر</span> التعليمية</h1>
 
     <div class="login-container">
         <h2>تسجيل دخول الطالب</h2>
         
+        <div id="custom-alert-msg"></div>
+        
         <div class="input-group">
             <input type="text" id="login-name" placeholder="اكتب اسمك الرباعي هنا..." required>
+        </div>
+
+        <div class="input-group">
+            <input type="tel" id="parent-phone" placeholder="رقم هاتف ولي الأمر (إجباري)..." required>
         </div>
         
         <div class="input-group">
             <input type="password" id="login-pass" placeholder="أدخل كود الاختبار..." required>
         </div>
 
-        <a class="forgot-link" id="forgot-link">كيفية تفعيل الحساب</a>
+        <a class="forgot-link" id="forgot-link">نسيت كود الاختبار</a>
         
         <button class="btn" id="login-btn">دخول المنصة</button>
 
-        <!-- --- الإضافات: صندوق التعليمات المخفي --- -->
-        <div id="payment-info">
-            <p><strong>خطوات الحصول على الكود:</strong></p>
-            <p>1. قم بتحويل مبلغ <strong>100</strong> جنيهاً على الرقم: <strong>[01224790723]</strong>.</p>
-            <p>2. قم بتصوير الشاشة (Screenshot) لرسالة التحويل.</p>
-            <p>3. اضغط على زر الدعم الفني بالأسفل وأرسل الصورة.</p>
+        <div id="support-message">
+            <p><strong>استرجاع أو الحصول على كود الاختبار:</strong></p>
+            <p>يرجى الضغط على زر <strong>"الدعم الفني"</strong> الأخضر في أسفل الشاشة للتواصل معنا عبر الواتساب واستلام الكود الخاص بك فوراً.</p>
         </div>
     </div>
 </div>
 
-<!-- تم تعديل رابط الواتساب فقط ليحتوي على الرسالة الجاهزة -->
-<a href="https://wa.me/201224790723?text=مرحباً، أرغب في الحصول على كود الاختبار (بقيمة 100 جنيهاً). قمت بتحويل المبلغ، وهذه صورة الإيصال:" class="whatsapp-float" target="_blank" rel="noopener noreferrer" title="تواصل معنا عبر واتساب">
+<a href="https://wa.me/201224790723?text=مرحباً، أرغب في استرجاع / الحصول على كود الاختبار الخاص بي." class="whatsapp-float" target="_blank" rel="noopener noreferrer" title="تواصل معنا عبر واتساب">
     <span>الدعم الفني</span>
     <svg viewBox="0 0 24 24">
         <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.457L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.742.002-2.602-1.01-5.05-2.85-6.892-1.84-1.842-4.29-2.856-6.896-2.858-5.442 0-9.866 4.372-9.87 9.746-.002 1.767.46 3.493 1.34 5.023l-.986 3.6 3.69-.968zm13.695-4.937c-.3-.149-1.777-.862-2.053-.962-.276-.1-.477-.149-.677.149-.199.299-.772.962-.947 1.16-.175.201-.35.226-.65.077-1.156-.573-1.928-1.012-2.693-2.316-.201-.341.201-.316.574-1.053.063-.125.032-.236-.016-.336-.048-.1-.477-1.136-.654-1.557-.172-.41-.347-.354-.477-.36l-.408-.008c-.141 0-.368.052-.56.26-.192.208-.733.706-.733 1.722 0 1.017.749 2.002.853 2.141.104.14 1.474 2.227 3.57 3.102.499.208.887.332 1.192.427.502.158.96.135 1.321.082.404-.06 1.777-.716 2.028-1.408.251-.692.251-1.284.175-1.408-.075-.124-.275-.199-.575-.349z"/>
     </svg>
 </a>
-
-<!-- --- الإضافات: كود الجافاسكريبت لإظهار الصندوق --- -->
-<script>
-    document.getElementById('forgot-link').addEventListener('click', function() {
-        var info = document.getElementById("payment-info");
-        if (info.style.display === "block") {
-            info.style.display = "none";
-        } else {
-            info.style.display = "block";
-        }
-    });
-</script>
 
 <script src="app.js"></script>
 </body>

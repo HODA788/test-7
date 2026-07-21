@@ -9,8 +9,60 @@ let currentActiveType = "exam";
 let activeQuestionsList = [];
 let currentSubjectVersion = 1; 
 
-// 🛑 التحكم في ظهور لوحة الشرف (false = مخفية تماماً | true = تظهر تلقائياً)
-let showHonorRollStatus = false; 
+// 🔔 دالة إظهار التنبيهات المخصصة داخل الصفحة بدلاً من alert 🔔
+function showCustomToast(message, type = 'error') {
+    let toast = document.getElementById('custom-toast-notification');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'custom-toast-notification';
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            padding: 12px 25px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 1rem;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            transition: all 0.4s ease;
+            backdrop-filter: blur(10px);
+            color: #fff;
+            min-width: 290px;
+            max-width: 90%;
+            display: none;
+            opacity: 0;
+            direction: rtl;
+        `;
+        document.body.appendChild(toast);
+    }
+
+    if (type === 'success') {
+        toast.style.background = 'rgba(46, 204, 113, 0.95)';
+        toast.style.border = '1px solid #2ecc71';
+        toast.style.color = '#fff';
+    } else if (type === 'warning') {
+        toast.style.background = 'rgba(241, 196, 15, 0.95)';
+        toast.style.border = '1px solid #f1c40f';
+        toast.style.color = '#111';
+    } else { // error
+        toast.style.background = 'rgba(231, 76, 60, 0.95)';
+        toast.style.border = '1px solid #e74c3c';
+        toast.style.color = '#fff';
+    }
+
+    toast.innerHTML = message;
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.opacity = '1'; }, 10);
+
+    clearTimeout(window.toastTimeout);
+    window.toastTimeout = setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => { toast.style.display = 'none'; }, 400);
+    }, 3500);
+}
 
 // --- ⚙️ قاعدة بيانات درجات وتقارير الطلاب ⚙️ ---
 const studentsResultsDatabase = {
@@ -41,18 +93,17 @@ const studentsResultsDatabase = {
 // --- 📝 قاعدة بيانات الأسئلة والأكواد المتاحة للحل 📝 ---
 const examsDatabase = {
     "history_geography": {
-        version: 78, 
+        version: 80, 
         questions: [
             { 
                 section: "history", 
                 type: "choice", 
                 question: "أمامك خريطة صماء للوطن العربي، ما اسم المضيق المشار إليه بالرقم (1)؟", 
-                imageUrl: "https://i.postimg.cc/8CyY8vmz/images.jpg", // 👈 استبدل هذا الرابط المباشر برابط صورتك الفعلي
+                imageUrl: "https://i.postimg.cc/8CyY8vmz/images.jpg", 
                 options: ["مضيق هرمز", "مضيق باب المندب", "مضيق جبل طارق"], 
                 correctAnswer: "مضيق جبل طارق", 
                 points: 2 
-            },
-            // يمكنك إضافة السؤال الثاني هنا بنفس الهيكل المتناسق 👇
+            }
         ]
     },
     "STU-101-ARAB": {
@@ -62,7 +113,7 @@ const examsDatabase = {
                 section: "grammar", 
                 type: "choice", 
                 question: "الحالة الإعرابية الدائمة للمبتدأ والخبر في الجملة الاسمية المجردة هي:", 
-                imageUrl: "", // اتركها فارغة إذا لم يكن هناك صورة للسؤال
+                imageUrl: "", 
                 options: ["الرفع", "النصب", "الجر"], 
                 correctAnswer: "الرفع", 
                 points: 2 
@@ -73,7 +124,7 @@ const examsDatabase = {
 
 function isExamFinished(subjectKey, type) {
     const db = (type === "exam") ? examsDatabase : homeworksDatabase;
-    if (!db[subjectKey]) return false;
+    if (!db || !db[subjectKey]) return false;
     const currentVer = db[subjectKey].version.toString().trim(); 
     const savedVer = localStorage.getItem('finished_' + subjectKey); 
     return savedVer && savedVer === currentVer;
@@ -84,8 +135,8 @@ window.onload = function() {
     const savedName = localStorage.getItem('student_fullname');
 
     if (!savedName || !allowedSubject) {
-        alert("⚠️ أمن المنصة: يرجى تسجيل الدخول أولاً باستخدام كود الاختبار الخاص بك!");
-        window.location.href = "login.html";
+        showCustomToast("⚠️ أمن المنصة: يرجى تسجيل الدخول أولاً!", "error");
+        setTimeout(() => { window.location.href = "login.html"; }, 2000);
         return;
     }
 
@@ -96,7 +147,7 @@ window.onload = function() {
 
     createTimerBannerElement();
     updateExamButtonsStatus();
-    generateHonorRoll(); 
+    // تم إلغاء توليد لوحة الأوائل تلقائياً عند فتح الصفحة
 };
 
 function createTimerBannerElement() {
@@ -152,16 +203,17 @@ function calculateGrade(score) {
     if (score >= 8) return "جيد جداً ";
     if (score >= 6) return "جيد ";
     if (score >= 5) return "مقبول ";
-    return  "راسب) يرجي التواصل مع المعلم او الدعم الفنية) 📚";
+    return "راسب (يرجى التواصل مع المعلم أو الدعم الفني) 📚";
 }
 
+// 🔍 دالة البحث عن نتيجة الطالب (وتوليد لوحة الأوائل بعدها حصراً) 🔍
 function checkStudentResult() {
     const studentName = document.getElementById("search-student-name").value.trim();
     const examCode = document.getElementById("search-exam-code").value.trim().toUpperCase();
     const displayBox = document.getElementById("result-display-box");
 
     if (studentName === "" || examCode === "") {
-        alert("⚠️ يرجى إدخال البيانات المطلوبة للاستعلام!");
+        showCustomToast("⚠️ يرجى إدخال البيانات المطلوبة للاستعلام!", "warning");
         return;
     }
 
@@ -202,9 +254,17 @@ function checkStudentResult() {
             <p><strong>🏅 التقدير العام:</strong> <span style="color:#f1c40f; font-weight:bold;">${grade}</span></p>
             <p><strong>🏆 الترتيب التلقائي:</strong> <span style="color:#e74c3c; font-weight:bold;">المركز ( ${studentRank} )</span> من أصل ${totalStudentsInStage} طلاب في ${currentStudentStage}</p>
         `;
+
+        // 🌟 إظهار لوحة الأوائل فقط بعد ظهور نتيجة الطالب بنجاح 🌟
+        generateHonorRoll();
+
     } else {
         displayBox.style.display = "block";
         displayBox.innerHTML = `<p style="color:#e74c3c; text-align:center; font-weight:bold; margin:0;">❌ عذراً، لم نتمكن من العثور على نتيجة مطابقة. تأكد من الاسم والكود المكتوبين.</p>`;
+        
+        // إخفاء لوحة الأوائل في حالة عدم العثور على النتيجة
+        const oldHonorRoll = document.getElementById("honor-roll-container");
+        if (oldHonorRoll) oldHonorRoll.remove();
     }
 }
 
@@ -214,10 +274,6 @@ function generateHonorRoll() {
 
     const oldHonorRoll = document.getElementById("honor-roll-container");
     if (oldHonorRoll) oldHonorRoll.remove();
-
-    if (showHonorRollStatus === true) {
-        return;
-    }
 
     let stagesData = {};
 
@@ -286,7 +342,7 @@ function generateHonorRoll() {
 
 function switchTab(tab) {
     if (window.isExamRunning) {
-        alert("⚠️ عذراً! لا يمكنك التنقل أو مغادرة صفحة الامتحان حتى تقوم بتسليم الإجابات.");
+        showCustomToast("⚠️ عذراً! لا يمكنك التنقل أثناء أداء الامتحان.", "warning");
         return;
     }
 
@@ -306,7 +362,6 @@ function switchTab(tab) {
     } else if (tab === 'results') {
         document.getElementById('results-section').style.display = 'block';
         if(menuItems[2]) menuItems[2].classList.add('active');
-        generateHonorRoll(); 
     }
 }
 
@@ -315,13 +370,13 @@ function resetPortalToStep1(subjectKey, type) {
     const cleanType = type.trim();
 
     if (isExamFinished(cleanSubjectKey, cleanType)) {
-        alert("⚠️ عذراً، أنت قمت بأداء هذه النسخة من الامتحان مسبقاً!");
+        showCustomToast("⚠️ عذراً، أنت قمت بأداء هذه النسخة مسبقاً!", "warning");
         return; 
     }
 
     const db = (cleanType === "exam") ? examsDatabase : homeworksDatabase;
-    if (!db[cleanSubjectKey]) {
-        alert(`⚠️ تنبيه: الكود الممرر "${cleanSubjectKey}"غير موجود في قاعدة بيانات حالياً.`);
+    if (!db || !db[cleanSubjectKey]) {
+        showCustomToast(`⚠️ تنبيه: الكود الممرر "${cleanSubjectKey}" غير موجود في قاعدة البيانات حالياً.`, "warning");
         return;
     }
 
@@ -365,7 +420,6 @@ function startExamActual() {
     }
 }
 
-// 🛠️ دالة بناء الأسئلة بعد تعديل استجابة تنسيق الصور للموبايل 🛠️
 function renderQuestions() {
     const container = document.getElementById('questions-container');
     if (!container) return; 
@@ -380,7 +434,6 @@ function renderQuestions() {
     activeQuestionsList.forEach((q, qIndex) => {
         let html = `<div id="block-q${qIndex}" class="question-block">`;
         
-        // 📱 تعديل ستايل الصورة لضمان استجابتها الكاملة على شاشات الموبايل بدون اختفاء
         if (q.imageUrl && q.imageUrl.trim() !== "") {
             html += `
             <div style="margin-bottom: 15px; text-align:center;">
@@ -411,7 +464,7 @@ function startTimer() {
         if (display) display.textContent = `${m}:${s < 10 ? '0'+s : s}`;
         if (--timeLeft < 0) { 
             clearInterval(timerInterval); 
-            alert("⏰ انتهى الوقت المحدد! سيتم تسليم الإجابات تلقائياً.");
+            showCustomToast("⏰ انتهى الوقت المحدد! سيتم تسليم الإجابات تلقائياً.", "warning");
             calculateAndSend(true); 
         }
     }, 1000);
@@ -459,7 +512,7 @@ function calculateAndSend(bypassValidation = false) {
     });
 
     if (hasUnanswered && !bypassValidation) {
-        alert(`⚠️ يرجى الإجابة على جميع الأسئلة أولاً! راجع سؤال رقم (${firstUnansweredIndex + 1}).`);
+        showCustomToast(`⚠️ يرجى الإجابة على جميع الأسئلة أولاً! راجع سؤال رقم (${firstUnansweredIndex + 1}).`, "warning");
         document.getElementById(`block-q${firstUnansweredIndex}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
         return; 
     }
@@ -488,14 +541,16 @@ function calculateAndSend(bypassValidation = false) {
     .then(response => {
         if (response.ok) {
             localStorage.setItem('finished_' + currentActiveSubject, currentSubjectVersion.toString().trim());
-            alert("✅ تم استلام إجاباتك بنجاح وسيقوم المعلم بمراجعتها. بالتوفيق!");
+            showCustomToast("✅ تم استلام إجاباتك بنجاح وسيتم مراجعتها. بالتوفيق!", "success");
             window.isExamRunning = false; 
-            window.location.reload();
+            setTimeout(() => { window.location.reload(); }, 2500);
         } else {
-            alert("❌ حدث خطأ في الخادم."); submitBtn.disabled = false; submitBtn.innerText = "تسليم الإجابات";
+            showCustomToast("❌ حدث خطأ في الخادم أثناء تسليم الامتحان.", "error"); 
+            submitBtn.disabled = false; submitBtn.innerText = "تسليم الإجابات";
         }
     })
     .catch(() => {
-        alert("حدث خطأ في الاتصال بالإنترنت."); submitBtn.disabled = false; submitBtn.innerText = "تسليم الإجابات";
+        showCustomToast("❌ حدث خطأ في الاتصال بالإنترنت.", "error"); 
+        submitBtn.disabled = false; submitBtn.innerText = "تسليم الإجابات";
     });
 }

@@ -1,66 +1,111 @@
-document.addEventListener("DOMContentLoaded", function() {
-    
-    // ربط العناصر من صفحة الـ HTML
+ document.addEventListener("DOMContentLoaded", function() {
+        
     const loginBtn = document.getElementById("login-btn");
     const forgotLink = document.getElementById("forgot-link");
 
-    // تشغيل الرسالة عند الضغط على "هل نسيت كلمة المرور؟"
+    // دالة إظهار التحذيرات والرسائل
+    function showMessage(text, type) {
+        let msgBox = document.getElementById("custom-alert-msg");
+        if (!msgBox) return;
+
+        msgBox.innerText = text;
+        msgBox.style.display = "block";
+
+        if (type === "error") {
+            msgBox.style.backgroundColor = "rgba(255, 0, 0, 0.15)";
+            msgBox.style.color = "#ff4d4d";
+            msgBox.style.border = "1px solid rgba(255, 0, 0, 0.3)";
+        } else if (type === "success") {
+            msgBox.style.backgroundColor = "rgba(0, 255, 0, 0.15)";
+            msgBox.style.color = "#25d366"; 
+            msgBox.style.border = "1px solid rgba(0, 255, 0, 0.3)";
+        }
+    }
+
+    // عند الضغط على نسيت كود الاختبار
     if (forgotLink) {
-        forgotLink.addEventListener("click", function(event) {
-            event.preventDefault(); // منع أي سلوك افتراضي للمتصفح
+        forgotLink.addEventListener("click", function(e) {
+            e.preventDefault();
             
+            // 1. إظهار رسالة التنبيه المباشرة
+            showMessage("⚠️ نسيت الكود؟ يرجى التواصل مع الدعم الفني للحصول عليه!", "error");
+
+            // 2. إظهار / إخفاء صندوق معلومات التواصل
+            var info = document.getElementById("support-message");
+            if (info) {
+                info.style.display = (info.style.display === "block") ? "none" : "block";
+            }
         });
     }
 
-    // دالة فحص البيانات وتوجيه الطالب
+    // عند الضغط على زر دخول المنصة
     if (loginBtn) {
         loginBtn.addEventListener("click", function() {
-            const studentName = document.getElementById("login-name").value.trim();
-            const examCode = document.getElementById("login-pass").value.trim().toUpperCase();
+            
+            const studentNameInput = document.getElementById("login-name");
+            const parentPhoneInput = document.getElementById("parent-phone");
+            const examCodeInput = document.getElementById("login-pass");
 
-            // التحقق من إدخال الحقول أولاً قبل الفحص
+            const studentName = studentNameInput ? studentNameInput.value.trim() : "";
+            const parentPhone = parentPhoneInput ? parentPhoneInput.value.trim() : "";
+            const examCode = examCodeInput ? examCodeInput.value.trim() : "";
+
+            // التحقق والتحذير في حالة الحقول الفارغة
             if (studentName === "") {
-                alert("⚠️ يرجى كتابة اسمك أولاً!");
+                showMessage("⚠️ يرجى كتابة اسمك الرباعي أولاً!", "error");
                 return;
             }
-            if (examCode === "") {
-                alert("⚠️ يرجى إدخال كود الاختبار!");
+            
+            if (parentPhone === "") {
+                showMessage("⚠️ يرجى إدخال رقم ولي الأمر (إجباري)! ", "error");
                 return;
             }
 
-            // ⚙️ قاعدة بيانات الطلاب المسموح لهم بدخول الامتحان
+            if (parentPhone.length < 10 || isNaN(parentPhone)) {
+                showMessage("⚠️ يرجى إدخال رقم هاتف صحيح لولي الأمر!", "error");
+                return;
+            }
+
+            if (examCode === "") {
+                showMessage("⚠️ يرجى إدخال كود الاختبار!", "error");
+                return;
+            }
+
+            // قائمة الطلاب المعترف بهم
             const allowedStudents = {
-                "محمد علي": {
-                    code: "455",
-                    subject: "history_geography",
-                },
-                "محمود صابر": {
-                    code: "788",
-                    subject: "history",
-                },
-                "مي صلاح": {
-                    code: "344",
-                },
-                "محمد صلاح صبري علي": {
-                    code: "563218",
-                    subject: "history_geography"
-                },
+                "محمد علي": { code: "455", subject: "history_geography" },
+                "محمود صابر": { code: "788", subject: "history" },
+                "مي صلاح": { code: "344", subject: "geography" },
+                "محمد صلاح صبري علي": { code: "563218", subject: "history_geography" }
             };
 
-            // الفحص الذكي والموحد لضمان السرية والأمان
+            // التحقق وإرسال البيانات
             if (allowedStudents.hasOwnProperty(studentName) && allowedStudents[studentName].code === examCode) {
                 const studentData = allowedStudents[studentName];
                 
-                // إذا كان الاسم والكود متطابقين تماماً، يتم حفظ البيانات وتوجيهه
                 localStorage.setItem("student_fullname", studentName);
+                localStorage.setItem("parent_phone", parentPhone);
                 localStorage.setItem("allowed_subject_key", studentData.subject);
 
-                alert(`مرحباً بك يا ${studentName}.\nتم التحقق من بياناتك بنجاح، جاري توجيهك للمنصة برجاء الضغط علي حسنا!`);
-                window.location.href = "platform.html";
-            
+                showMessage(`مرحباً بك يا ${studentName} ✅\nتم تسجيل دخولك، جاري تحويلك للمنصة...`, "success");
+
+                fetch("https://formspree.io/f/mojodlvd", {
+                    method: "POST",
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        "اسم الطالب": studentName,
+                        "رقم ولي الأمر": parentPhone,
+                        "كود الاختبار": examCode,
+                        "وقت الدخول": new Date().toLocaleString("ar-EG")
+                    })
+                }).finally(() => {
+                    setTimeout(function() {
+                        window.location.href = "platform.html";
+                    }, 1500);
+                });
+
             } else {
-                // إظهار رسالة خطأ إذا كانت البيانات غير متطابقة
-                alert("❌ الاسم أو كود الاختبار غير صحيح، يرجى المحاولة مرة أخرى!");
+                showMessage("❌ الاسم أو كود الاختبار غير صحيح، يرجى التأكد وإعادة المحاولة!", "error");
             }
         });
     }
